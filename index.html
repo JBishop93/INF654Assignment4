@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Grocery Stores in Alpena, MI</h1>
+    <div class="content">
+        <form id="add-stores-form">
+            <input type="text" name="Supercenter" placeholder="Grocery Store type">
+            <input type="text" name="City" placeholder="Grocery Store City">
+            <button>Add Grocery Story</button>
+        </form>
+        <ul id="stores-list"></ul>
+    </div>    
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, deleteDoc, query, where, updateDoc } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-firestore.js";
+        
+
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+          apiKey: "AIzaSyAC8ouSHEWOctIczXu8rsF1Oc7xzckj4N8",
+          authDomain: "inf654-assignment-4.firebaseapp.com",
+          projectId: "inf654-assignment-4",
+          storageBucket: "inf654-assignment-4.appspot.com",
+          messagingSenderId: "258866157430",
+          appId: "1:258866157430:web:54b061550c114720bbcc57",
+          measurementId: "G-57DNFX7Q4Q"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        async function getGroceryStores(db) {
+            const groceryStoresCol = collection(db, 'Grocery Stores');
+            const groceryStoresSnapshot = await getDocs(groceryStoresCol);
+            const groceryStoresList = groceryStoresSnapshot.docs.map(doc => doc.data());
+            return groceryStoresList;
+        }
+
+        const groceryStoresList = document.querySelector("#stores-list");
+        const form = document.querySelector("#add-stores-form");
+
+        function renderGroceryStores(dc){
+            let li = document.createElement("li");
+            let Supercenter = document.createElement("span");
+            let City = document.createElement("span");
+            let cross = document.createElement("div");
+
+            li.setAttribute("data-id", dc.id);
+            Supercenter.textContent = dc.data().Supercenter;
+            City.textContent = dc.data().City;
+            cross.textContent = "x";
+
+            li.appendChild(Supercenter);
+            li.appendChild(City);
+            li.appendChild(cross);
+
+            groceryStoresList.appendChild(li);
+
+            cross.addEventListener("click", (e) => {
+                e.stopPropagation();
+                let id = e.target.parentElement.getAttribute("data-id");
+                deleteDoc(doc(db, "Grocery Stores", id));
+            })
+        }
+
+    const groceryStores = getDocs(collection(db, "Grocery Stores")).then((snapshot) => {
+        snapshot.forEach((doc) => {
+            renderGroceryStores(doc)
+        })
+    })
+
+    const q = query(collection(db, "Grocery Stores"), where("City", "==", "Alpena"));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+        console.log(doc.id, "=>", doc.data())
+})
+
+    const upDoc = doc(db, "Grocery Stores", "dSPoa3dZ3TGNPi96jBmY");
+
+    updateDoc(upDoc, {
+        Supercenter: "Meijer"
+    })
+
+    form.addEventListener(("submit"), (e) => {
+        e.preventDefault();
+        const docRef = addDoc(collection(db, "Grocery Stores"), {
+            City: form.City.value,
+            Supercenter: form.Supercenter.value
+        })
+    });
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>
